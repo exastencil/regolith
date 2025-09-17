@@ -9,6 +9,7 @@ Purpose
 - The root component receives an allocator; all children use this allocator when they need to allocate.
 - The library provides helpers to render a tree to HTML as a string and prebuilt helpers for common HTML tags.
 - You can define reusable components (similar to React/Vue/Svelte) that accept options/state and build a subtree at runtime.
+- Exposes a declarative API for building component trees in a nested, expression-oriented style (compose tags and components directly).
 
 Design overview
 
@@ -47,14 +48,15 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const alloc = gpa.allocator();
 
-    var root = try reg.node(alloc, .div, .{ .class = "container" });
-    defer root.deinit();
+    // Declarative, nested builder style: construct the whole subtree as an expression.
+    var tree = try reg.el(alloc, .div, .{ .class = "container" }, .{
+        reg.text("Hello, "),
+        reg.el(.strong, .{}, .{ reg.text("world") }),
+        reg.br(),
+    });
+    defer tree.deinit();
 
-    try root.child(reg.text("Hello, "));
-    try root.child(reg.tag(.strong, .{}, .{ reg.text("world") }));
-    try root.child(reg.tag(.br, .{}, .{}));
-
-    const html = try reg.renderToString(alloc, &root);
+    const html = try reg.renderToString(alloc, &tree);
     defer alloc.free(html);
 
     std.debug.print("{s}\n", .{html});
@@ -63,10 +65,6 @@ pub fn main() !void {
 
 README-driven roadmap
 
-- v0.0.1 Minimal core
-  - Node struct (element, text) with children storage and owned attributes
-  - Renderer to string with escaping
-  - A handful of tag helpers (div, span, a, ul, li, p, h1–h6, img, br)
 - v0.0.2 Components API
   - Component functions with props/state and subtree construction
   - Convenience builder for attributes
