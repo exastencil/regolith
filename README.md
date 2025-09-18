@@ -35,7 +35,6 @@ Quickstart
 - Requirements: Zig 0.15.1
 - Build: zig build
 - Test: zig build test
-- Run example binary (scaffold): zig build run
 
 Hypothetical usage (target API – subject to change)
 
